@@ -61,8 +61,7 @@ export default function AnswerSheet({ status, answer, onCancel, clearInputs }) {
           }
         </div>
       </div>
-
-      {/* Body */}
+ 
       <div className="p-4">
         {(status === "pending" || status === "processing") && (
           <p className="text-sm text-gray-500 italic animate-pulse">
