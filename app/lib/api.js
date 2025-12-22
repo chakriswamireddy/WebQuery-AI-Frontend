@@ -7,12 +7,21 @@ export async function createTask(url, question) {
     body: JSON.stringify({ url, question }),
   });
 
-  if (!res.ok) throw new Error("Failed to create task");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to create task");
+  }
+
   return res.json();
 }
 
 export async function getTask(id) {
   const res = await fetch(`${API_URL}/tasks/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch task");
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to fetch task");
+  }
+
   return res.json();
 }
