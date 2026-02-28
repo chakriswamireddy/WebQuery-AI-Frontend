@@ -16,7 +16,7 @@ export default function Home() {
   const [question, setQuestion] = useState("");
   const [taskId, setTaskId] = useState(null);
 
-  const { data: task,  status, isFailed, isCompleted } = useTask(taskId);
+  const { data: task,  status, isFailed, isCompleted, stopListening } = useTask(taskId);
   const { mutate: createTask } = useCreateTask();
 
 
@@ -114,7 +114,7 @@ useEffect(() => {
           <AnswerSheet
             status={status}
             answer={answer}
-            onCancel={cancelPolling}
+            onCancel={stop}
             clearInputs={( ) => {clearInputs(); setTaskId(null);}}
           />
         )}
