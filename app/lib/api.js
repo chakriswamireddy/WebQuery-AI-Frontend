@@ -16,7 +16,7 @@ export async function createTask(url, question) {
 }
 
 export async function getTask(id) {
-  const res = await fetch(`${API_URL}/tasks/${id}`);
+  const res = await fetch(`${API_URL}/tasks/${id}/stream`);
 
   if (!res.ok) {
     const text = await res.text();
