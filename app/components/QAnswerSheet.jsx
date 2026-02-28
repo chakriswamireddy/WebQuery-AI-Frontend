@@ -9,6 +9,13 @@ import { X } from "lucide-react";
 export default function AnswerSheet({ status, answer, onCancel, clearInputs }) {
   const [seconds, setSeconds] = useState(0);
 
+   // reset timer when a new task starts
+  useEffect(() => {
+    if (status === "processing") {
+      setSeconds(0);
+    }
+  }, [status]);
+
   useEffect(() => {
     if (status === "pending" || status === "processing") {
       const i = setInterval(() => setSeconds((s) => s + 1), 1000);
