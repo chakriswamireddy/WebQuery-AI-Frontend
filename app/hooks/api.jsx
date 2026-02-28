@@ -13,26 +13,64 @@ export function useCreateTask() {
 
 
 
+
 export function useTask(taskId) {
- 
+  const eventSourceRef = useRef(null);
 
-  const query = useQuery({
-    queryKey: ["task", taskId],
-    queryFn: () => getTask(taskId),
-    enabled: !!taskId,
-    refetchInterval: (q) => {
-      const status = q.state.data?.status;
-      return status === "completed" || status === "failed" ? false : 2000;
-    },
-  });
+  const [data, setData] = useState(null);
+  const [status, setStatus] = useState("idle");
+  const [error, setError] = useState(null);
 
-  function cancelPolling() {
-    queryClient.cancelQueries({ queryKey: ["task", taskId] });
+  useEffect(() => {
+    if (!taskId) return;
+
+    const eventSource = new EventSource(
+      `${API_URL}/tasks/${taskId}/stream`
+    );
+
+    eventSourceRef.current = eventSource;
+    setStatus("loading");
+
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+
+        setData(payload);
+        setStatus(payload.status);
+
+        if (
+          payload.status === "completed" ||
+          payload.status === "failed"
+        ) {
+          eventSource.close();
+        }
+      } catch (err) {
+        setError(err);
+        eventSource.close();
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      setError(err);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [taskId]);
+
+  function stopListening() {
+    eventSourceRef.current?.close();
   }
 
   return {
-    ...query,
-    cancelPolling,
+    data,
+    status,
+    error,
+    isLoading: status === "loading" || status === "processing",
+    isCompleted: status === "completed",
+    isFailed: status === "failed",
+    stopListening,
   };
 }
-
