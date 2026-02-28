@@ -49,7 +49,7 @@ useEffect(() => {
       { url, question },
       {
         onSuccess: (data) => {
-          setTaskId(data.id);
+          setTaskId(data.task.id);
           
           toast.success("Task Created Successfully");
           // clearInputs();
