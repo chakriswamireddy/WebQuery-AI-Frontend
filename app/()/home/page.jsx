@@ -16,7 +16,7 @@ export default function Home() {
   const [question, setQuestion] = useState("");
   const [taskId, setTaskId] = useState(null);
 
-  const { data: task, cancelPolling } = useTask(taskId);
+  const { data: task, stopListening } = useTask(taskId);
   const { mutate: createTask } = useCreateTask();
 
 
