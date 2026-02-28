@@ -14,9 +14,11 @@ export function useCreateTask() {
 
 
 
+const MAX_WAIT_TIME = 2 * 60 * 1000; // 2 minutes
 
 export function useTask(taskId) {
   const eventSourceRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("idle");
@@ -30,7 +32,14 @@ export function useTask(taskId) {
     );
 
     eventSourceRef.current = eventSource;
-    setStatus("loading");
+    setStatus("processing");
+
+    // ⏱️ timeout guard
+    timeoutRef.current = setTimeout(() => {
+      setError(new Error("Task timed out"));
+      setStatus("failed");
+      eventSource.close();
+    }, MAX_WAIT_TIME);
 
     eventSource.onmessage = (event) => {
       try {
@@ -43,25 +52,30 @@ export function useTask(taskId) {
           payload.status === "completed" ||
           payload.status === "failed"
         ) {
+          clearTimeout(timeoutRef.current);
           eventSource.close();
         }
       } catch (err) {
         setError(err);
+        clearTimeout(timeoutRef.current);
         eventSource.close();
       }
     };
 
-    eventSource.onerror = (err) => {
-      setError(err);
+    eventSource.onerror = () => {
+      setError(new Error("Connection lost"));
+      clearTimeout(timeoutRef.current);
       eventSource.close();
     };
 
     return () => {
+      clearTimeout(timeoutRef.current);
       eventSource.close();
     };
   }, [taskId]);
 
   function stopListening() {
+    clearTimeout(timeoutRef.current);
     eventSourceRef.current?.close();
   }
 
@@ -69,9 +83,9 @@ export function useTask(taskId) {
     data,
     status,
     error,
-    isLoading: status === "loading" || status === "processing",
+    stopListening,
+    isProcessing: status === "processing",
     isCompleted: status === "completed",
     isFailed: status === "failed",
-    stopListening,
   };
 }
