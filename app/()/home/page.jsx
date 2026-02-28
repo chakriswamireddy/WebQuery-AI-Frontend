@@ -16,22 +16,13 @@ export default function Home() {
   const [question, setQuestion] = useState("");
   const [taskId, setTaskId] = useState(null);
 
-  const { data: task,  status, isFailed, isCompleted, stopListening } = useTask(taskId);
+  const { data: task, cancelPolling } = useTask(taskId);
   const { mutate: createTask } = useCreateTask();
 
 
-  // const status = task?.status;
+  const status = task?.status;
   const answer = task?.answer;
 
-useEffect(() => {
-  if (isFailed) {
-    toast.error("Failed to fetch result. Please try again.");
-  }
-
-  if (isCompleted) {
-    toast.success("Task completed successfully");
-  }
-}, [isFailed, isCompleted]);
 
 
   function clearInputs() {
@@ -49,8 +40,7 @@ useEffect(() => {
       { url, question },
       {
         onSuccess: (data) => {
-          setTaskId(data.task.id);
-          
+          setTaskId(data.id);
           toast.success("Task Created Successfully");
           // clearInputs();
         },
@@ -114,7 +104,7 @@ useEffect(() => {
           <AnswerSheet
             status={status}
             answer={answer}
-            onCancel={stop}
+            onCancel={cancelPolling}
             clearInputs={( ) => {clearInputs(); setTaskId(null);}}
           />
         )}
