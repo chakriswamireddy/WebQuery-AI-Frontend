@@ -20,7 +20,7 @@ export default function Home() {
   const { mutate: createTask } = useCreateTask();
 
 
-  const status = task?.status;
+  // const status = task?.status;
   const answer = task?.answer;
 
 useEffect(() => {
